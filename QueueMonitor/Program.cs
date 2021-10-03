@@ -1,7 +1,11 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using QueueMonitor.Services;
+
+var builder = WebApplication.CreateBuilder(args);
 
 QueueMonitorSettings settings = new QueueMonitorSettings();
 builder.Configuration.GetSection(QueueMonitorSettings.Queue).Bind(settings);
+
+builder.Services.Configure<QueueMonitorSettings>(builder.Configuration.GetSection(QueueMonitorSettings.Queue));
 
 // Add services to the container.
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
@@ -10,7 +14,7 @@ builder.Services.AddSignalR();
 foreach (var item in settings.Settings)
 {
     builder.Services.AddSingleton<IHostedService>(x =>
-        ActivatorUtilities.CreateInstance<QueueMonitorService<AzQueueCheck>>(x, item.QueueName, item.ConnectionString)
+        ActivatorUtilities.CreateInstance<QueueMonitorService<AzureStorageQueueOperator>>(x, item.QueueName, item.ConnectionString)
     );
 }
 

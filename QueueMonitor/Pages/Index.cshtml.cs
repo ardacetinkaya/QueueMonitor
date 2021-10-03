@@ -43,36 +43,15 @@ public class Chart
     public string? Color { get; internal set; }
     public string Description { get; internal set; }
 
-    public string GenerateOptions()
-    {
-        var barColor = Color;
-        return string.Format(@"
-        var options_{0} = {{
-            title: '{1}',
-            height: 500,
-            width: 250,
-            vAxis: {{
-                format:'decimal',
-                viewWindow: {{
-                    max: 100,
-                    min: 0
-                }}
-            }},
-            legend: {{ position: 'none' }},
-            colors: ['{2}']
-        }};
-        ",Title,Description,barColor);
-    }
-
     public string GenerateScript()
     {
         return @$"
-var data_{Title} = new google.visualization.DataTable();
-data_{Title}.addColumn('string', 'Level');
-data_{Title}.addColumn('number', 'Count');
-data_{Title}.addRows([['{Title}', message]]);
+                var data_{Title} = new google.visualization.DataTable();
+                data_{Title}.addColumn('string', 'Level');
+                data_{Title}.addColumn('number', 'Count');
+                data_{Title}.addRows([['{Title}', message]]);
 
-chart_{Title}.draw(data_{Title}, options_{Title});
-";
+                chart_{Title}.draw(data_{Title}, options_{Title});
+    ";
     }
 }

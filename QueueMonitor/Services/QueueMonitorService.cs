@@ -1,6 +1,5 @@
-using Azure.Storage.Queues;
-using Azure.Storage.Queues.Models;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using QueueMonitor.Hubs;
 
 public interface IQueuePlatform
@@ -12,20 +11,31 @@ public interface IQueuePlatform
 public class QueueMonitorService<T> :IHostedService, IDisposable where T: IQueuePlatform, new()
 {
     private string _queueName;
-    private Timer _timer;
+    private Timer? _timer;
     private readonly ILogger<QueueMonitorService<T>> _logger;
     private readonly IHubContext<QueueHub> _hubContext;
     private readonly T _queueCheck;
+    private readonly QueueMonitorSettingDTO? _setting;
 
     public QueueMonitorService(string queueName, string connectionString
         , ILogger<QueueMonitorService<T>> logger
-        , IHubContext<QueueHub> hubContext)
+        , IHubContext<QueueHub> hubContext,IOptions<QueueMonitorSettings> options)
     {
         _logger = logger;
         _hubContext = hubContext;
         _queueCheck = new T();
         _queueCheck.Initialize(queueName, connectionString);
         _queueName = queueName;
+
+        _setting = options.Value.Settings.Where(s => s.QueueName == _queueName)
+            .Select(s=>new QueueMonitorSettingDTO {
+                ChartDescription = s.ChartDescription,
+                Color = s.Color,
+                QueueName = s.QueueName,
+                Title = s.Title,
+                Threshold = s.Threshold
+            })
+            .FirstOrDefault();
     }
 
     public void Dispose()
@@ -33,18 +43,20 @@ public class QueueMonitorService<T> :IHostedService, IDisposable where T: IQueue
          _timer?.Dispose();
     }
 
-    private void DoWork(object state)
+    private void CheckMessageCount(object state)
     {  
         int count = _queueCheck.GetMessageCount();
-        _hubContext.Clients.All.SendAsync("ReceiveMessage", _queueName, count);
-        _logger.LogInformation($"Monitor Service for {_queueName} is working. Count: {count}");
+
+        _hubContext.Clients.All.SendAsync("ReceiveMessage", _queueName, count,_setting);
+
+        _logger.LogInformation($"Monitor Service for '{_queueName}' is working. Count: {count}");
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Monitor Service for {_queueName} running.");
+        _logger.LogInformation($"Monitor Service for '{_queueName}' running...");
 
-        _timer = new Timer(DoWork, null, TimeSpan.Zero, 
+        _timer = new Timer(CheckMessageCount, null, TimeSpan.Zero, 
             TimeSpan.FromSeconds(5));
 
         return Task.CompletedTask;
@@ -52,35 +64,10 @@ public class QueueMonitorService<T> :IHostedService, IDisposable where T: IQueue
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Monitor Service for {_queueName} is stopping.");
+        _logger.LogInformation($"Monitor Service for '{_queueName}' is stopping.");
 
         _timer?.Change(Timeout.Infinite, 0);
 
         return Task.CompletedTask;
-    }
-}
-
-internal class AzQueueCheck: IQueuePlatform
-{
-    private QueueClient _queueClient;
-    private bool _isInitialized = false;
-    
-    public int GetMessageCount()
-    {
-
-        int messageCount = 0;
-        if (_isInitialized && _queueClient.Exists())
-        {
-            QueueProperties properties = _queueClient.GetProperties();
-            messageCount = properties.ApproximateMessagesCount;
-        }
-
-        return messageCount;
-    }
-
-    public void Initialize(string queueName,string connectionString)
-    {
-        _queueClient = new QueueClient(connectionString, queueName);
-        _isInitialized = true;
     }
 }

@@ -15,3 +15,12 @@ public class QueueMonitorSettings
 
     public IEnumerable<QueueMonitorSetting> Settings { get; set; }
 }
+
+public class QueueMonitorSettingDTO
+{
+    public string Title { get; internal set; }
+    public string ChartDescription { get; internal set; }
+    public string Color { get; internal set; }
+    public string QueueName { get; internal set; }
+    public int Threshold { get; internal set; }
+}

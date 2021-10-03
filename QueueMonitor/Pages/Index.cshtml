@@ -24,21 +24,38 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
-            @foreach (var item in Model.Charts)
-            {
+        @foreach (var item in Model.Charts)
+        {
             @:var chart_@item.Title = new google.visualization.ColumnChart(document.getElementById('chart-@item.Title'));
 
-            }
-            connection.on("ReceiveMessage", function (queue, message) {
+        }
 
+            connection.on("ReceiveMessage", function (queue, message,setting) {
             @foreach (var item in Model.Charts)
-            {
-            @:if ('@item.QueueName' === queue)
-            {
-                @: @Html.Raw(item.GenerateOptions())
-                @: @Html.Raw(item.GenerateScript())
+                {
+                @:if ('@item.QueueName' === queue)
+                @:{
+                      @:console.log(setting);
+                      @:var options_@item.Title = {
+                      @:  title: setting.chartDescription,
+                      @:  height: 300,
+                      @:  width: 250,
+                      @:  vAxis: {
+                      @:      format:'decimal',
+                      @:      viewWindow: {
+                      @:          max: 100,
+                      @:          min: 0
+                      @:      }
+                      @:  },
+                      @:  legend: { position: 'none' },
+                      @:  colors: [`${setting.color}`]
+                      @:};
+                      @Html.Raw(item.GenerateScript())
+
+
+                @:}
             }
-            }
+
             });
         }
     </script>

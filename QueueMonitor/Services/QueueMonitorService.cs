@@ -36,7 +36,7 @@ public class QueueMonitorService<T> :IHostedService, IDisposable where T: IQueue
     private void DoWork(object state)
     {  
         int count = _queueCheck.GetMessageCount();
-        _hubContext.Clients.All.SendAsync("ReceiveMessage","QueueName",count);
+        _hubContext.Clients.All.SendAsync("ReceiveMessage", _queueName, count);
         _logger.LogInformation($"Monitor Service for {_queueName} is working. Count: {count}");
     }
 

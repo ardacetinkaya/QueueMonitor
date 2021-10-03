@@ -9,15 +9,13 @@
 
 </div>
 <div class="container">
-    <div class="row">
+    <div class="row row-cols-4">
         @foreach (var item in Model.Charts)
          {
             <div class="col-sm">
                 <div id="chart-@item.Title"></div>
             </div>
          }
-        
-        
     </div>
 </div>
 
@@ -29,12 +27,14 @@
         @foreach (var item in Model.Charts)
         {
             @:var chart_@item.Title = new google.visualization.ColumnChart(document.getElementById('chart-@item.Title'));
+
         }
             connection.on("ReceiveMessage", function (queue, message) {
         @foreach (var item in Model.Charts)
-        {
-            var script=item.GenerateScript();
-            @Html.Raw(script)
+            {
+            @Html.Raw(item.GenerateOptions()) 
+
+            @Html.Raw(item.GenerateScript())
         }
             });
         }

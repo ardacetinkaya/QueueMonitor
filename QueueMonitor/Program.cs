@@ -10,7 +10,7 @@ builder.Services.AddSignalR();
 foreach (var item in settings.Settings)
 {
     builder.Services.AddSingleton<IHostedService>(x =>
-        ActivatorUtilities.CreateInstance<QueueMonitorService<AzQueueCheck>>(x, item.Name, item.ConnectionString)
+        ActivatorUtilities.CreateInstance<QueueMonitorService<AzQueueCheck>>(x, item.QueueName, item.ConnectionString)
     );
 }
 

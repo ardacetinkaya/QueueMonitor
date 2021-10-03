@@ -7,24 +7,6 @@
 var connection = new signalR.HubConnectionBuilder().withUrl("/queueHub").build();
 google.charts.load('current', { 'packages': ['corechart'] });
 
-var options = {
-    height: 500,
-    width: 500,
-    hAxis: {
-        title: '',
-    },
-    vAxis: {
-        title: '',
-        viewWindowMode: 'explicit',
-        viewWindow: {
-            max: 100,
-            min: 0
-        }
-    },
-    legend: { position: 'none' },
-    pointSize: 3
-};
-
 connection.start().then(function () {
 
 }).catch(function (err) {

@@ -23,7 +23,9 @@ public class IndexModel : PageModel
         Charts = settings.Settings.Select(s => new Chart
         {
             Title = s.Title.ToLowerInvariant(),
-            QueueName = s.Name.ToLowerInvariant()            
+            QueueName = s.QueueName.ToLowerInvariant(),
+            Color = s.Color?.ToLowerInvariant(),
+            Description = s.ChartDescription
         }).ToList();
     }
 
@@ -36,20 +38,41 @@ public class IndexModel : PageModel
 public class Chart
 {
     
-    public string Title { get; set; }
-    public string QueueName { get; set; }
+    public string Title { get; internal set; }
+    public string QueueName { get; internal set; }
+    public string? Color { get; internal set; }
+    public string Description { get; internal set; }
 
+    public string GenerateOptions()
+    {
+        var barColor = Color;
+        return string.Format(@"
+        var options_{0} = {{
+            title: '{1}',
+            height: 500,
+            width: 250,
+            vAxis: {{
+                format:'decimal',
+                viewWindow: {{
+                    max: 100,
+                    min: 0
+                }}
+            }},
+            legend: {{ position: 'none' }},
+            colors: ['{2}']
+        }};
+        ",Title,Description,barColor);
+    }
 
     public string GenerateScript()
     {
-        var variableName = Title;
         return @$"
 var data_{Title} = new google.visualization.DataTable();
 data_{Title}.addColumn('string', 'Level');
 data_{Title}.addColumn('number', 'Count');
 data_{Title}.addRows([['{Title}', message]]);
 
-chart_{Title}.draw(data_{Title}, options);
+chart_{Title}.draw(data_{Title}, options_{Title});
 ";
     }
 }

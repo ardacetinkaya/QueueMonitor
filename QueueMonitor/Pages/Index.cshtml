@@ -1,0 +1,42 @@
+﻿@page
+@model IndexModel
+@using System.Web
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+
+</div>
+<div class="container">
+    <div class="row">
+        @foreach (var item in Model.Charts)
+         {
+            <div class="col-sm">
+                <div id="chart-@item.Title"></div>
+            </div>
+         }
+        
+        
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+        @foreach (var item in Model.Charts)
+        {
+            @:var chart_@item.Title = new google.visualization.ColumnChart(document.getElementById('chart-@item.Title'));
+        }
+            connection.on("ReceiveMessage", function (queue, message) {
+        @foreach (var item in Model.Charts)
+        {
+            var script=item.GenerateScript();
+            @Html.Raw(script)
+        }
+            });
+        }
+    </script>
+}

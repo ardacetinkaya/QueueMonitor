@@ -5,7 +5,7 @@ using QueueMonitor.Hubs;
 public interface IQueuePlatform
 {
     void Initialize(string queueName,string connectionString);
-    int GetMessageCount();
+    Task<int> GetMessageCount();
 }
 
 public class QueueMonitorService<T> :IHostedService, IDisposable where T: IQueuePlatform, new()
@@ -45,7 +45,7 @@ public class QueueMonitorService<T> :IHostedService, IDisposable where T: IQueue
 
     private void CheckMessageCount(object state)
     {  
-        int count = _queueCheck.GetMessageCount();
+        int count = _queueCheck.GetMessageCount().Result;
 
         _hubContext.Clients.All.SendAsync("ReceiveMessage", _queueName, count,_setting);
 
@@ -57,7 +57,7 @@ public class QueueMonitorService<T> :IHostedService, IDisposable where T: IQueue
         _logger.LogInformation($"Monitor Service for '{_queueName}' running...");
 
         _timer = new Timer(CheckMessageCount, null, TimeSpan.Zero, 
-            TimeSpan.FromSeconds(5));
+            TimeSpan.FromSeconds(3));
 
         return Task.CompletedTask;
     }

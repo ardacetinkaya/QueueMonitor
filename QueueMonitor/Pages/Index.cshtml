@@ -35,7 +35,7 @@
                 {
                 @:if ('@item.QueueName' === queue)
                 @:{
-                      @:console.log(setting);
+                      @:var color = (message >= setting.threshold) ? 'red' : setting.color;
                       @:var options_@item.Title = {
                       @:  title: setting.chartDescription,
                       @:  height: 300,
@@ -48,7 +48,7 @@
                       @:      }
                       @:  },
                       @:  legend: { position: 'none' },
-                      @:  colors: [`${setting.color}`]
+                      @:  colors: [`${color}`]
                       @:};
                       @Html.Raw(item.GenerateScript())
 

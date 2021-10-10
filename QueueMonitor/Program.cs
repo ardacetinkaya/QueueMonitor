@@ -13,9 +13,20 @@ builder.Services.AddSignalR();
 
 foreach (var item in settings.Settings)
 {
-    builder.Services.AddSingleton<IHostedService>(x =>
-        ActivatorUtilities.CreateInstance<QueueMonitorService<AzureStorageQueueOperator>>(x, item.QueueName, item.ConnectionString)
-    );
+    switch (item.Type)
+    {
+        case "AzureStorageQueue":
+            builder.Services.AddSingleton<IHostedService>(x =>
+                ActivatorUtilities.CreateInstance<QueueMonitorService<AzureStorageQueueOperator>>(x, item.QueueName, item.ConnectionString)
+            );
+            break;
+        case "RabbitMQ":
+            builder.Services.AddSingleton<IHostedService>(x =>
+                ActivatorUtilities.CreateInstance<QueueMonitorService<RabbitMQOperator>>(x, item.QueueName, item.ConnectionString)
+            );
+            break;
+    }
+
 }
 
 
